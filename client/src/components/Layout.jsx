@@ -103,9 +103,32 @@ const Layout = ({ theme, setTheme }) => {
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   /* =======================
+     Mobile page title helper
+  ======================= */
+  const getMobileTitle = () => {
+    const path = location.pathname;
+    const allItems = [...navSections[0].items, ...navSections[1].items];
+
+    const exact = allItems.find((x) => x.to === path);
+    if (exact) return exact.label;
+
+    const prefix = allItems
+      .filter((x) => x.to !== "/" && path.startsWith(x.to))
+      .sort((a, b) => b.to.length - a.to.length)[0];
+
+    if (prefix) return prefix.label;
+
+    const seg = path.split("/").filter(Boolean).slice(-1)[0] || "Page";
+    return seg
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (m) => m.toUpperCase());
+  };
+
+  /* =======================
      TOP BAR
      ✅ Desktop unchanged
-     ✅ Mobile updated to match your screenshot
+     ✅ Mobile background fixed (matches main)
+     ✅ Remove mb gaps that expose different bg
   ======================= */
   const TopBar = () => {
     const firstName = userData?.firstName || "Employee";
@@ -122,141 +145,158 @@ const Layout = ({ theme, setTheme }) => {
     const initials =
       `${(firstName || "E")[0] || "E"}${(lastName || "U")[0] || "U"}`.toUpperCase();
 
-    const onCheckIn = () => {
-      // ✅ change this route if you want
-      // handleNavigate("/attendance");
-      handleNavigate("/mark-attendance");
-    };
+    const isHome = location.pathname === "/";
+
+    const onCheckIn = () => handleNavigate("/mark-attendance");
+    const onBack = () => navigate(-1);
+
+    const MobileRightActions = () => (
+      <div className="flex items-center gap-2">
+        <button
+          className="relative h-10 w-10 rounded-full bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-white/10 shadow-sm grid place-items-center"
+          aria-label="Notifications"
+          title="Notifications"
+        >
+          <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#1E293B]" />
+        </button>
+
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="h-10 w-10 rounded-full bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-white/10 shadow-sm grid place-items-center"
+          aria-label="Open menu"
+          title="Menu"
+        >
+          <Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" strokeWidth={2.4} />
+        </button>
+      </div>
+    );
 
     return (
       <>
-        {/* ========= Mobile / Tablet (UPDATED LIKE IMAGE) ========= */}
+        {/* ========= Mobile ========= */}
         <div className="lg:hidden">
-          <header className="sticky top-0 z-30">
-            {/* top “status” row */}
-            <div className="mx-4 pt-4">
-              <div className="flex items-center justify-between px-1 pb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                <span>
-                  {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </span>
-                <div className="flex items-center gap-2 opacity-70">
-                  <span className="inline-block h-2 w-6 rounded-full bg-gray-400/60 dark:bg-gray-500/60" />
-                  <span className="inline-block h-2 w-4 rounded-full bg-gray-400/60 dark:bg-gray-500/60" />
-                  <span className="inline-block h-2 w-8 rounded-full bg-gray-400/60 dark:bg-gray-500/60" />
-                </div>
-              </div>
-            </div>
+          {/* ✅ IMPORTANT: header area now uses SAME bg as main */}
+          <header className="sticky top-0 z-30 bg-[#F6F6F6] dark:bg-[#1B1F25]">
+            
 
-            {/* Card */}
-            <div className="mx-4 mb-4">
-              <div
-                className={[
-                  "relative",
-                  "rounded-3xl",
-                  "bg-white dark:bg-[#1E293B]",
-                  "border border-red-500/70 dark:border-red-500/40", // ✅ red outline like screenshot
-                  "shadow-[0_18px_50px_-40px_rgba(2,6,23,0.35)]",
-                  "px-4 pt-4 pb-6", // pb enough so button can overlap
-                ].join(" ")}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  {/* Left: avatar + text */}
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/profile")}
-                    className="flex items-center gap-3 min-w-0"
-                    aria-label="Open profile"
-                  >
-                    <span
-                      className={[
-                        "relative",
-                        "w-11 h-11 rounded-full overflow-hidden",
-                        "bg-gray-100 dark:bg-white/10",
-                        "border-2 border-white dark:border-gray-700",
-                        "ring-2 ring-gray-200/70 dark:ring-white/10", // ✅ more “photo” feel
-                        "shadow-sm",
-                        "grid place-items-center shrink-0",
-                      ].join(" ")}
-                    >
-                      {avatar ? (
-                        <img
-                          alt="User Profile"
-                          src={avatar}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span className="text-xs font-bold text-gray-800 dark:text-white">
-                          {initials}
-                        </span>
-                      )}
-                    </span>
-
-                    <span className="min-w-0">
-                      <span className="block text-base font-extrabold text-gray-900 dark:text-white truncate">
-                        Hello {firstName}!
-                      </span>
-                      <span className="block text-[12px] text-gray-500 dark:text-gray-300 truncate">
-                        Email: {email || "—"}
-                      </span>
-                    </span>
-                  </button>
-
-                  {/* Right: bell + menu in round buttons */}
-                  <div className="flex items-center gap-2">
+            {/* ===== HOME MOBILE TOPBAR (special card) ===== */}
+            {isHome ? (
+              <div className="px-4 pb-3 pt-4">
+                <div
+                  className={[
+                    "relative",
+                    "rounded-3xl",
+                    "bg-white dark:bg-[#1E293B]",
+                    "border border-red-500/70 dark:border-red-500/40",
+                    "shadow-[0_18px_50px_-40px_rgba(2,6,23,0.35)]",
+                    "px-4 pt-4 pb-6",
+                  ].join(" ")}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    {/* Left */}
                     <button
-                      className="relative h-10 w-10 rounded-full bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-white/10 shadow-sm grid place-items-center"
-                      aria-label="Notifications"
-                      title="Notifications"
+                      type="button"
+                      onClick={() => handleNavigate("/profile")}
+                      className="flex items-center gap-3 min-w-0"
+                      aria-label="Open profile"
                     >
-                      <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#1E293B]" />
+                      <span
+                        className={[
+                          "relative",
+                          "w-11 h-11 rounded-full overflow-hidden",
+                          "bg-gray-100 dark:bg-white/10",
+                          "border-2 border-white dark:border-gray-700",
+                          "ring-2 ring-gray-200/70 dark:ring-white/10",
+                          "shadow-sm",
+                          "grid place-items-center shrink-0",
+                        ].join(" ")}
+                      >
+                        {avatar ? (
+                          <img
+                            alt="User Profile"
+                            src={avatar}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-gray-800 dark:text-white">
+                            {initials}
+                          </span>
+                        )}
+                      </span>
+
+                      <span className="min-w-0">
+                        <span className="block text-base font-extrabold text-gray-900 dark:text-white truncate">
+                          Hello {firstName}!
+                        </span>
+                        <span className="block text-[12px] text-gray-500 dark:text-gray-300 truncate">
+                          Email: {email || "—"}
+                        </span>
+                      </span>
                     </button>
 
+                    <MobileRightActions />
+                  </div>
+
+                  <div className="mt-3">
+                    <p className="text-[11px] tracking-[0.22em] text-gray-400 dark:text-gray-400 uppercase">
+                      {formatMobileDate()}
+                    </p>
+                  </div>
+
+                  {/* Floating Check-in button */}
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-4">
                     <button
-                      onClick={() => setMobileOpen(true)}
-                      className="h-10 w-10 rounded-full bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-white/10 shadow-sm grid place-items-center"
-                      aria-label="Open menu"
-                      title="Menu"
+                      type="button"
+                      onClick={onCheckIn}
+                      className={[
+                        "px-6 py-2",
+                        "rounded-xl",
+                        "bg-primary text-white",
+                        "text-sm font-semibold",
+                        "shadow-[0_14px_30px_-18px_rgba(237,41,38,0.75)]",
+                        "active:scale-[0.98] transition",
+                        "flex items-center gap-2",
+                      ].join(" ")}
+                      aria-label="Check in"
+                      title="Check in"
                     >
-                      <Menu className="w-5 h-5 text-gray-700 dark:text-gray-200" strokeWidth={2.4} />
+                      <span>Check in</span>
+                      <span aria-hidden>›</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Date (bottom-left) */}
-                <div className="mt-3">
-                  <p className="text-[11px] tracking-[0.22em] text-gray-400 dark:text-gray-400 uppercase">
-                    {formatMobileDate()}
-                  </p>
-                </div>
+                {/* ✅ keep tiny spacer for the half-outside button, but bg matches now */}
+                <div className="h-6" />
+              </div>
+            ) : (
+              /* ===== OTHER PAGES MOBILE TOPBAR ===== */
+              <div className="px-4 pb-3 pt-4">
+                <div className="rounded-2xl bg-white dark:bg-[#1E293B] border border-gray-200/70 dark:border-white/10 shadow-sm px-3 py-3">
+                  <div className="grid grid-cols-[44px_1fr_auto] items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="h-10 w-10 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-200/70 dark:border-white/10 grid place-items-center active:scale-[0.98] transition"
+                      aria-label="Go back"
+                      title="Back"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-800 dark:text-white" />
+                    </button>
 
-                {/* ✅ Floating Check-in button (half outside) */}
-                <div className="absolute left-1/2 -translate-x-1/2 -bottom-4">
-                  <button
-                    type="button"
-                    onClick={onCheckIn}
-                    className={[
-                      "px-6 py-2",
-                      "rounded-xl",
-                      "bg-primary text-white",
-                      "text-sm font-semibold",
-                      "shadow-[0_14px_30px_-18px_rgba(237,41,38,0.75)]",
-                      "active:scale-[0.98] transition",
-                      "flex items-center gap-2",
-                    ].join(" ")}
-                    aria-label="Check in"
-                    title="Check in"
-                  >
-                    <span>Check in</span>
-                    <span aria-hidden>›</span>
-                  </button>
+                    <div className="min-w-0">
+                      <p className="text-center text-[15px] font-semibold text-gray-900 dark:text-white truncate">
+                        {getMobileTitle()}
+                      </p>
+                    </div>
+
+                    <MobileRightActions />
+                  </div>
                 </div>
               </div>
-
-              {/* Spacer so content doesn’t jump into the floating button */}
-              <div className="h-5" />
-            </div>
+            )}
           </header>
         </div>
 
@@ -485,7 +525,7 @@ const Layout = ({ theme, setTheme }) => {
                   transition={fade}
                   className="flex items-center"
                 >
-                  <img src={miniLogo} alt="Logo mini" className="h-9 h-9 object-contain" />
+                  <img src={miniLogo} alt="Logo mini" className="h-9 w-9 object-contain" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -678,7 +718,7 @@ const Layout = ({ theme, setTheme }) => {
   };
 
   /* =======================
-     Mobile Bottom Nav (same as your current)
+     Mobile Bottom Nav (UNCHANGED)
   ======================= */
   const MobileBottomNav = () => {
     const tabs = mobileMenu;
