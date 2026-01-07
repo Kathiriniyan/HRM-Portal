@@ -1488,6 +1488,230 @@ export const notifications = [
 
 
 
+// ==================== FEEDS ====================
+// fields:
+// - id: FEED-2026-0000001
+// - creatorName: Default admin name (string)
+// - createdAt: timestamp (ISO)
+// - content: text
+// - attachment: { type: "image" | "doc", url, name? }
+
+export const feeds = [
+  {
+    id: "FEED-2026-0000001",
+    creatorName: "Admin",
+    createdAt: "2026-01-06T09:10:00.000Z",
+    content:
+      "Welcome to the new HR system feed! You'll see important updates, announcements, and shared documents here.",
+    attachment: {
+      type: "image",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "welcome-banner.jpg",
+    },
+  },
+  {
+    id: "FEED-2026-0000002",
+    creatorName: "Admin",
+    createdAt: "2026-01-06T11:30:00.000Z",
+    content:
+      "Reminder: Please update your profile photo to a clear headshot (front-facing) within this week.",
+    attachment: {
+      type: "doc",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "profile-photo-guidelines.pdf",
+    },
+  },
+  {
+    id: "FEED-2026-0000003",
+    creatorName: "Admin",
+    createdAt: "2026-01-06T14:20:00.000Z",
+    content:
+      "Payroll Automation project is now active. Please report any payroll slip download issues to IT.",
+    attachment: {
+      type: "image",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "payroll-update.jpg",
+    },
+  },
+  {
+    id: "FEED-2026-0000004",
+    creatorName: "Admin",
+    createdAt: "2026-01-06T16:05:00.000Z",
+    content:
+      "Attendance & Shift Revamp: New rules draft is prepared. HR will share the final policy soon.",
+    attachment: {
+      type: "doc",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "attendance-shift-revamp.docx",
+    },
+  },
+  {
+    id: "FEED-2026-0000005",
+    creatorName: "Admin",
+    createdAt: "2026-01-06T18:40:00.000Z",
+    content:
+      "System maintenance window: minor improvements will be deployed tonight. No action needed.",
+    attachment: {
+      type: "image",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "maintenance.jpg",
+    },
+  },
+  {
+    id: "FEED-2026-0000006",
+    creatorName: "Admin",
+    createdAt: "2026-01-07T04:30:00.000Z",
+    content:
+      "Marketing Campaign Ops: Please ensure banner approvals are completed before publishing deadlines.",
+    attachment: {
+      type: "doc",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "campaign-approval-checklist.pdf",
+    },
+  },
+  {
+    id: "FEED-2026-0000007",
+    creatorName: "Admin",
+    createdAt: "2026-01-07T06:15:00.000Z",
+    content:
+      "Production Quality Improvements: Safety checklist update rollout is in progress. Training completion is required.",
+    attachment: {
+      type: "image",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "safety-checklist.jpg",
+    },
+  },
+  {
+    id: "FEED-2026-0000008",
+    creatorName: "Admin",
+    createdAt: "2026-01-07T08:25:00.000Z",
+    content:
+      "New feature: Tasks now support assignee selection for HR and editable expected dates.",
+    attachment: {
+      type: "doc",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "tasks-feature-note.pdf",
+    },
+  },
+  {
+    id: "FEED-2026-0000009",
+    creatorName: "Admin",
+    createdAt: "2026-01-07T09:40:00.000Z",
+    content:
+      "Please verify your office email domain is correct. Report any mismatches to HR immediately.",
+    attachment: {
+      type: "image",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "email-domain.jpg",
+    },
+  },
+  {
+    id: "FEED-2026-0000010",
+    creatorName: "Admin",
+    createdAt: "2026-01-07T10:55:00.000Z",
+    content:
+      "Upcoming: January monthly review meeting schedule will be posted in Events. Keep an eye on your calendar.",
+    attachment: {
+      type: "doc",
+      url: "https://i.pinimg.com/1200x/47/5b/59/475b59c61a6efb3ec8ac0a57e43fd03b.jpg",
+      name: "monthly-review-info.docx",
+    },
+  },
+];
+
+
+// ==================== EVENTS ====================
+// fields:
+// - id: EVT-2026-0000001
+// - employeeId: one employee id (string)
+// - title: string
+// - date: "YYYY-MM-DD"
+// - time: "HH:mm" (optional)
+// - createdAt: timestamp (ISO)
+
+export const events = [
+  {
+    id: "EVT-2026-0000001",
+    employeeId: "HR-EMP-00001",
+    title: "HR Weekly Planning",
+    date: "2026-01-08",
+    time: "09:30",
+    createdAt: "2026-01-06T06:10:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000002",
+    employeeId: "HR-EMP-00002",
+    title: "Sales Pipeline Review",
+    date: "2026-01-08",
+    time: "15:00",
+    createdAt: "2026-01-06T07:25:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000003",
+    employeeId: "HR-EMP-00003",
+    title: "Payroll Slip Download Bug Triage",
+    date: "2026-01-09",
+    time: "10:00",
+    createdAt: "2026-01-06T08:40:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000004",
+    employeeId: "HR-EMP-00004",
+    title: "Attendance Radius Rules Discussion",
+    date: "2026-01-09",
+    createdAt: "2026-01-06T09:05:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000005",
+    employeeId: "HR-EMP-00005",
+    title: "Accounts: Payroll Adjustment Verification",
+    date: "2026-01-10",
+    time: "11:30",
+    createdAt: "2026-01-06T10:10:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000006",
+    employeeId: "HR-EMP-00006",
+    title: "IT Standup (Internal)",
+    date: "2026-01-10",
+    createdAt: "2026-01-06T12:00:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000007",
+    employeeId: "HR-EMP-00007",
+    title: "Meeting Agenda Finalization",
+    date: "2026-01-11",
+    time: "14:15",
+    createdAt: "2026-01-06T13:10:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000008",
+    employeeId: "HR-EMP-00008",
+    title: "Production Safety Checklist Training",
+    date: "2026-01-11",
+    time: "08:00",
+    createdAt: "2026-01-06T15:30:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000009",
+    employeeId: "HR-EMP-00009",
+    title: "Campaign Banner Review Session",
+    date: "2026-01-12",
+    createdAt: "2026-01-07T05:20:00.000Z",
+  },
+  {
+    id: "EVT-2026-0000010",
+    employeeId: "HR-EMP-00010",
+    title: "QA Checklist Spot Check",
+    date: "2026-01-12",
+    time: "16:45",
+    createdAt: "2026-01-07T06:05:00.000Z",
+  },
+];
+
+
+
+
 // ==================== SALUTATIONS ====================
 export const salutations = [
   { id: "SAL-01", name: "Mr." },

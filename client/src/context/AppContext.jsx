@@ -6,6 +6,8 @@ import {
   notifications as seedNotifications,
   tasks as seedTasks,
   projects as seedProjects,
+  feeds as seedFeeds,
+  events as seedEvents,
 } from "../assets/assets";
 
 export const AppContext = createContext();
@@ -35,15 +37,14 @@ export const AppContextProvider = ({ children }) => {
     return stored ? JSON.parse(stored) : seedTasks || [];
   });
 
+  // ✅ Feeds + Events: NO localStorage (in-memory only)
+  const [feeds, setFeeds] = useState(() => seedFeeds || []);
+  const [events, setEvents] = useState(() => seedEvents || []);
+
   const projects = seedProjects || [];
 
-  useEffect(() => {
-    localStorage.setItem(LS_NOTIFS, JSON.stringify(notifications || []));
-  }, [notifications]);
-
-  useEffect(() => {
-    localStorage.setItem(LS_TASKS, JSON.stringify(tasks || []));
-  }, [tasks]);
+  useEffect(() => localStorage.setItem(LS_NOTIFS, JSON.stringify(notifications || [])), [notifications]);
+  useEffect(() => localStorage.setItem(LS_TASKS, JSON.stringify(tasks || [])), [tasks]);
 
   const login = (email, password) => {
     const emailNorm = safeLower(email);
@@ -149,10 +150,8 @@ export const AppContextProvider = ({ children }) => {
     setTasks((prev) =>
       (prev || []).map((t) => {
         if (t.id !== taskId) return t;
-
         const next = { ...t, ...patch, updatedAt: patch?.updatedAt || now };
 
-        // ✅ rules
         if (safeLower(next.status) === "completed") {
           next.progress = 100;
           next.completedAt = next.completedAt || now;
@@ -174,7 +173,6 @@ export const AppContextProvider = ({ children }) => {
             },
           ];
         }
-
         return next;
       })
     );
@@ -182,6 +180,29 @@ export const AppContextProvider = ({ children }) => {
 
   const deleteTask = (taskId) => {
     setTasks((prev) => (prev || []).filter((t) => t.id !== taskId));
+  };
+
+  /* ==========================
+     ✅ Feeds (simple)
+  ========================== */
+  const sortedFeeds = useMemo(() => {
+    return (feeds || []).slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }, [feeds]);
+
+  /* ==========================
+     ✅ Events (SELF ONLY)
+  ========================== */
+  const userEvents = useMemo(() => {
+    if (!currentEmployeeId) return [];
+    return (events || [])
+      .filter((e) => e.employeeId === currentEmployeeId)
+      .slice()
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }, [events, currentEmployeeId]);
+
+  const addEvent = (event) => {
+    if (!event?.id) return;
+    setEvents((prev) => [event, ...(prev || [])]);
   };
 
   const value = useMemo(
@@ -194,7 +215,6 @@ export const AppContextProvider = ({ children }) => {
       currentEmployeeId,
       canEditEmployee,
 
-      // ✅ add employees to context (for names)
       employees,
 
       // notifications
@@ -216,6 +236,17 @@ export const AppContextProvider = ({ children }) => {
       addTask,
       updateTask,
       deleteTask,
+
+      // feeds
+      feeds,
+      setFeeds,
+      sortedFeeds,
+
+      // events
+      events,
+      setEvents,
+      userEvents,
+      addEvent,
     }),
     [
       userData,
@@ -227,6 +258,10 @@ export const AppContextProvider = ({ children }) => {
       tasks,
       projects,
       userTasks,
+      feeds,
+      sortedFeeds,
+      events,
+      userEvents,
     ]
   );
 
