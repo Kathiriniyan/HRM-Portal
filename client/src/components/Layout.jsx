@@ -36,6 +36,8 @@ const tabSpring = { type: "spring", stiffness: 520, damping: 34, mass: 0.7 };
 
 // ✅ set your Create route here
 const CREATE_PATH = "/create";
+const NOTIFICATION_PATH = "/notifications";
+
 
 /* =======================
    Date helpers
@@ -153,11 +155,12 @@ const Layout = ({ theme, setTheme }) => {
     const MobileRightActions = () => (
       <div className="flex items-center gap-2">
         <button
+          onClick={() => handleNavigate(NOTIFICATION_PATH)}
           className="relative h-10 w-10 rounded-full bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-white/10 shadow-sm grid place-items-center"
           aria-label="Notifications"
           title="Notifications"
         >
-          <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200 cursor-pointer" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#1E293B]" />
         </button>
 
@@ -340,10 +343,11 @@ const Layout = ({ theme, setTheme }) => {
                     <ThemeToggleBtn key={theme} theme={theme} setTheme={setTheme} />
 
                     <button
+                      onClick={() => handleNavigate(NOTIFICATION_PATH)}
                       className="relative p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                       aria-label="Notifications"
                     >
-                      <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                      <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 cursor-pointer" />
                       <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#0f141a]" />
                     </button>
 

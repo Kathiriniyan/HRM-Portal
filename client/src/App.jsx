@@ -9,6 +9,7 @@ import Tasks from "./pages/Tasks";
 import Feeds from "./pages/Feeds";
 import Profile from "./pages/Profile";
 import Home from "./pages/Home";
+import Notifications from "./pages/Notifications";
 
 
 const getInitialTheme = () => {
@@ -53,6 +54,7 @@ const App = () => {
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/feeds" element={<Feeds />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/notifications" element={<Notifications />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

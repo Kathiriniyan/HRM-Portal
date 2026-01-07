@@ -77,7 +77,7 @@ export const companies = [
 // ==================== EMPLOYEES / USERS ====================
 const commonProfileImage = "https://i.pinimg.com/736x/26/be/33/26be33b0a83cd960adccdfb4389037f1.jpg";
 
-  export const employees = [
+export const employees = [
   {
     id: "HR-EMP-00001",
     profileImage: commonProfileImage,
@@ -562,6 +562,923 @@ const commonProfileImage = "https://i.pinimg.com/736x/26/be/33/26be33b0a83cd960a
 
 
 
+
+// ==================== PROJECTS ====================
+export const projects = [
+  {
+    id: "PROJ-2026-0001",
+    name: "HR System Stabilization",
+    description: "Bug fixes, data cleanup, and UX improvements across HR modules.",
+    createdAt: "2025-12-10T06:30:00.000Z",
+    createdBy: "HR-EMP-00001",
+  },
+  {
+    id: "PROJ-2026-0002",
+    name: "Attendance & Shift Revamp",
+    description: "Improve attendance rules, shift assignment flows, and reporting.",
+    createdAt: "2025-12-15T04:40:00.000Z",
+    createdBy: "HR-EMP-00001",
+  },
+  {
+    id: "PROJ-2026-0003",
+    name: "Payroll Automation",
+    description: "Automate payroll generation and correction workflows.",
+    createdAt: "2025-12-20T07:10:00.000Z",
+    createdBy: "HR-EMP-00001",
+  },
+  {
+    id: "PROJ-2026-0004",
+    name: "Marketing Campaign Ops",
+    description: "Coordinate tasks for campaign assets, approvals, and deadlines.",
+    createdAt: "2025-12-22T09:25:00.000Z",
+    createdBy: "HR-EMP-00002",
+  },
+  {
+    id: "PROJ-2026-0005",
+    name: "Production Quality Improvements",
+    description: "QA checks, packing verification, and safety checklist tracking.",
+    createdAt: "2025-12-28T05:15:00.000Z",
+    createdBy: "HR-EMP-00008",
+  },
+];
+
+// ==================== TASKS ====================
+// Notes:
+// - taskId format: TASK-2026-0000001
+// - assignedEmployees: can be one or many employees
+// - status: open | overdue | completed | working | pending | review | canceled | transferred
+// - if progress === 100 => status should be "completed" and completedAt must be set
+// - createdBy: either HR (HR-EMP-00001) or self (employee creates their own task)
+// - history: example "database style" audit trail
+
+export const tasks = [
+  // 1) Assigned to HR-EMP-00002 (self-created)
+  {
+    id: "TASK-2026-0000001",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "working",
+    priority: "High",
+    subject: "Follow up: Task 20 client confirmation",
+    detail:
+      "Confirm client requirements for Task 20, update notes, and share summary with HR and IT team.",
+    projectId: "PROJ-2026-0004",
+    progress: 55,
+    completedAt: null,
+    createdAt: "2026-01-02T08:15:00.000Z",
+    expectedStartAt: "2026-01-02T09:00:00.000Z",
+    expectedEndAt: "2026-01-08T11:00:00.000Z",
+    createdBy: "HR-EMP-00002",
+    updatedAt: "2026-01-06T10:25:00.000Z",
+    history: [
+      {
+        at: "2026-01-02T08:15:00.000Z",
+        by: "HR-EMP-00002",
+        action: "created",
+        summary: "Task created and assigned to self.",
+      },
+      {
+        at: "2026-01-03T06:00:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Added notes after first call. Progress 25%.",
+        changes: { progress: { from: 0, to: 25 } },
+      },
+      {
+        at: "2026-01-06T10:25:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Client feedback received. Progress 55%.",
+        changes: { progress: { from: 25, to: 55 } },
+      },
+    ],
+  },
+
+  // 2) Assigned to HR-EMP-00002 (HR-created)
+  {
+    id: "TASK-2026-0000002",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "pending",
+    priority: "Medium",
+    subject: "Update sales contact list for January",
+    detail:
+      "Review sales contact list, remove duplicates, confirm email domains, and export updated list.",
+    projectId: "PROJ-2026-0001",
+    progress: 10,
+    completedAt: null,
+    createdAt: "2026-01-03T05:20:00.000Z",
+    expectedStartAt: "2026-01-03T08:30:00.000Z",
+    expectedEndAt: "2026-01-10T12:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-05T09:40:00.000Z",
+    history: [
+      {
+        at: "2026-01-03T05:20:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "Task created by HR and assigned to HR-EMP-00002.",
+      },
+      {
+        at: "2026-01-05T09:40:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Started cleaning duplicates. Progress 10%.",
+        changes: { progress: { from: 0, to: 10 } },
+      },
+    ],
+  },
+
+  // 3) Group task includes HR-EMP-00002 (HR-created)
+  {
+    id: "TASK-2026-0000003",
+    assignedEmployees: ["HR-EMP-00002", "HR-EMP-00003", "HR-EMP-00004"],
+    status: "review",
+    priority: "High",
+    subject: "Finalize notification UX changes",
+    detail:
+      "Review notification UX on tablet sizes (1024–1279). Confirm no overflow and approve final layout behavior.",
+    projectId: "PROJ-2026-0001",
+    progress: 90,
+    completedAt: null,
+    createdAt: "2026-01-04T04:00:00.000Z",
+    expectedStartAt: "2026-01-04T06:30:00.000Z",
+    expectedEndAt: "2026-01-07T14:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-07T09:10:00.000Z",
+    history: [
+      {
+        at: "2026-01-04T04:00:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "Task created by HR and assigned to Sales + IT reviewers.",
+      },
+      {
+        at: "2026-01-05T07:30:00.000Z",
+        by: "HR-EMP-00003",
+        action: "progress_updated",
+        summary: "Verified layout on Chrome/Edge. Progress 60%.",
+        changes: { progress: { from: 0, to: 60 } },
+      },
+      {
+        at: "2026-01-07T09:10:00.000Z",
+        by: "HR-EMP-00002",
+        action: "status_changed",
+        summary: "Marked as ready for final review.",
+        changes: { status: { from: "working", to: "review" }, progress: { from: 60, to: 90 } },
+      },
+    ],
+  },
+
+  // 4) Assigned to HR-EMP-00002 (self-created, overdue)
+  {
+    id: "TASK-2026-0000004",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "overdue",
+    priority: "High",
+    subject: "Submit weekly sales report (Week 1)",
+    detail:
+      "Prepare weekly sales report for management. Include pipeline summary and next-week priorities.",
+    projectId: "PROJ-2026-0004",
+    progress: 40,
+    completedAt: null,
+    createdAt: "2025-12-30T08:10:00.000Z",
+    expectedStartAt: "2025-12-30T09:00:00.000Z",
+    expectedEndAt: "2026-01-03T12:00:00.000Z",
+    createdBy: "HR-EMP-00002",
+    updatedAt: "2026-01-06T13:00:00.000Z",
+    history: [
+      {
+        at: "2025-12-30T08:10:00.000Z",
+        by: "HR-EMP-00002",
+        action: "created",
+        summary: "Task created and assigned to self.",
+      },
+      {
+        at: "2026-01-02T10:20:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Collected pipeline figures. Progress 40%.",
+        changes: { progress: { from: 0, to: 40 } },
+      },
+      {
+        at: "2026-01-04T04:10:00.000Z",
+        by: "HR-EMP-00002",
+        action: "status_changed",
+        summary: "Deadline missed; task flagged overdue.",
+        changes: { status: { from: "working", to: "overdue" } },
+      },
+      {
+        at: "2026-01-06T13:00:00.000Z",
+        by: "HR-EMP-00002",
+        action: "edited",
+        summary: "Updated report template and added missing sections.",
+      },
+    ],
+  },
+
+  // 5) Group task includes HR-EMP-00002 (HR-created, completed)
+  {
+    id: "TASK-2026-0000005",
+    assignedEmployees: ["HR-EMP-00002", "HR-EMP-00007"],
+    status: "completed",
+    priority: "Medium",
+    subject: "Prepare Friday meeting agenda",
+    detail:
+      "Draft agenda for Friday management meeting, include topics and timeboxes. Share with secretary for final formatting.",
+    projectId: "PROJ-2026-0004",
+    progress: 100,
+    completedAt: "2026-01-03T12:30:00.000Z",
+    createdAt: "2026-01-01T09:10:00.000Z",
+    expectedStartAt: "2026-01-01T10:00:00.000Z",
+    expectedEndAt: "2026-01-03T13:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-03T12:30:00.000Z",
+    history: [
+      {
+        at: "2026-01-01T09:10:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "HR created agenda task and assigned to Sales + Secretary.",
+      },
+      {
+        at: "2026-01-02T08:00:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Drafted first agenda outline. Progress 60%.",
+        changes: { progress: { from: 0, to: 60 } },
+      },
+      {
+        at: "2026-01-03T10:50:00.000Z",
+        by: "HR-EMP-00007",
+        action: "edited",
+        summary: "Formatted agenda and added room/attendee details.",
+      },
+      {
+        at: "2026-01-03T12:30:00.000Z",
+        by: "HR-EMP-00002",
+        action: "completed",
+        summary: "Agenda finalized and shared to management.",
+        changes: { status: { from: "review", to: "completed" }, progress: { from: 60, to: 100 } },
+      },
+    ],
+  },
+
+  // 6) Assigned to HR-EMP-00002 (HR-created, transferred)
+  {
+    id: "TASK-2026-0000006",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "transferred",
+    priority: "Low",
+    subject: "Update profile photo guidelines",
+    detail:
+      "Draft guidelines for profile image format and size. Later transferred to HR for policy consistency.",
+    projectId: "PROJ-2026-0001",
+    progress: 15,
+    completedAt: null,
+    createdAt: "2026-01-02T05:05:00.000Z",
+    expectedStartAt: "2026-01-02T07:00:00.000Z",
+    expectedEndAt: "2026-01-07T09:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-05T08:30:00.000Z",
+    history: [
+      {
+        at: "2026-01-02T05:05:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "Task created by HR for Sales input.",
+      },
+      {
+        at: "2026-01-03T09:15:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Added draft bullet points. Progress 15%.",
+        changes: { progress: { from: 0, to: 15 } },
+      },
+      {
+        at: "2026-01-05T08:30:00.000Z",
+        by: "HR-EMP-00001",
+        action: "status_changed",
+        summary: "Transferred task ownership back to HR policy team.",
+        changes: { status: { from: "working", to: "transferred" } },
+      },
+    ],
+  },
+
+  // 7) Assigned to HR-EMP-00002 (self-created, canceled)
+  {
+    id: "TASK-2026-0000007",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "canceled",
+    priority: "Low",
+    subject: "Create duplicate lead cleanup script",
+    detail:
+      "Initial idea to create a cleanup script; later canceled because cleanup handled manually in spreadsheet.",
+    projectId: "PROJ-2026-0004",
+    progress: 0,
+    completedAt: null,
+    createdAt: "2025-12-26T07:30:00.000Z",
+    expectedStartAt: "2025-12-27T09:00:00.000Z",
+    expectedEndAt: "2025-12-29T12:00:00.000Z",
+    createdBy: "HR-EMP-00002",
+    updatedAt: "2025-12-27T05:10:00.000Z",
+    history: [
+      {
+        at: "2025-12-26T07:30:00.000Z",
+        by: "HR-EMP-00002",
+        action: "created",
+        summary: "Task created and planned for next day.",
+      },
+      {
+        at: "2025-12-27T05:10:00.000Z",
+        by: "HR-EMP-00002",
+        action: "status_changed",
+        summary: "Canceled due to alternative cleanup approach.",
+        changes: { status: { from: "open", to: "canceled" } },
+      },
+    ],
+  },
+
+  // 8) Group task includes HR-EMP-00002 (HR-created)
+  {
+    id: "TASK-2026-0000008",
+    assignedEmployees: ["HR-EMP-00002", "HR-EMP-00005"],
+    status: "working",
+    priority: "Medium",
+    subject: "Confirm overtime totals for payroll adjustment",
+    detail:
+      "Cross-check overtime totals for January adjustment. Sales and Accounts must confirm totals before payroll run.",
+    projectId: "PROJ-2026-0003",
+    progress: 45,
+    completedAt: null,
+    createdAt: "2026-01-04T06:25:00.000Z",
+    expectedStartAt: "2026-01-04T07:30:00.000Z",
+    expectedEndAt: "2026-01-08T10:30:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-06T09:05:00.000Z",
+    history: [
+      {
+        at: "2026-01-04T06:25:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "HR created payroll confirmation task for Sales + Accounts.",
+      },
+      {
+        at: "2026-01-05T07:50:00.000Z",
+        by: "HR-EMP-00005",
+        action: "edited",
+        summary: "Attached overtime sheet references and notes.",
+      },
+      {
+        at: "2026-01-06T09:05:00.000Z",
+        by: "HR-EMP-00002",
+        action: "progress_updated",
+        summary: "Validated Sales overtime claims. Progress 45%.",
+        changes: { progress: { from: 0, to: 45 } },
+      },
+    ],
+  },
+
+  // 9) Assigned to HR-EMP-00002 (self-created)
+  {
+    id: "TASK-2026-0000009",
+    assignedEmployees: ["HR-EMP-00002"],
+    status: "open",
+    priority: "Medium",
+    subject: "Draft campaign timeline for Q1",
+    detail:
+      "Draft Q1 campaign timeline and list of deliverables. Share with marketing team for feedback.",
+    projectId: "PROJ-2026-0004",
+    progress: 0,
+    completedAt: null,
+    createdAt: "2026-01-06T04:10:00.000Z",
+    expectedStartAt: "2026-01-06T07:30:00.000Z",
+    expectedEndAt: "2026-01-12T12:00:00.000Z",
+    createdBy: "HR-EMP-00002",
+    updatedAt: "2026-01-06T04:10:00.000Z",
+    history: [
+      {
+        at: "2026-01-06T04:10:00.000Z",
+        by: "HR-EMP-00002",
+        action: "created",
+        summary: "Task created and scheduled.",
+      },
+    ],
+  },
+
+  // 10) Group task includes HR-EMP-00002 (HR-created, completed)
+  {
+    id: "TASK-2026-0000010",
+    assignedEmployees: ["HR-EMP-00002", "HR-EMP-00009"],
+    status: "completed",
+    priority: "High",
+    subject: "Approve banner set for campaign",
+    detail:
+      "Review banner set design and approve final versions for publishing.",
+    projectId: "PROJ-2026-0004",
+    progress: 100,
+    completedAt: "2026-01-06T11:45:00.000Z",
+    createdAt: "2026-01-05T07:10:00.000Z",
+    expectedStartAt: "2026-01-05T08:00:00.000Z",
+    expectedEndAt: "2026-01-06T12:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-06T11:45:00.000Z",
+    history: [
+      {
+        at: "2026-01-05T07:10:00.000Z",
+        by: "HR-EMP-00001",
+        action: "created",
+        summary: "HR created approval task for Sales + Designer.",
+      },
+      {
+        at: "2026-01-06T09:20:00.000Z",
+        by: "HR-EMP-00009",
+        action: "edited",
+        summary: "Uploaded final banner variations and size set.",
+      },
+      {
+        at: "2026-01-06T11:45:00.000Z",
+        by: "HR-EMP-00002",
+        action: "completed",
+        summary: "Approved final banner set.",
+        changes: { status: { from: "review", to: "completed" }, progress: { from: 90, to: 100 } },
+      },
+    ],
+  },
+
+  // ---- Remaining tasks (11–20) across other employees ----
+
+  {
+    id: "TASK-2026-0000011",
+    assignedEmployees: ["HR-EMP-00003"],
+    status: "working",
+    priority: "High",
+    subject: "Fix payroll slip download issue",
+    detail: "Investigate and fix payroll slip PDF download problem on /payroll route.",
+    projectId: "PROJ-2026-0003",
+    progress: 65,
+    completedAt: null,
+    createdAt: "2026-01-02T06:00:00.000Z",
+    expectedStartAt: "2026-01-02T07:00:00.000Z",
+    expectedEndAt: "2026-01-09T10:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-06T05:55:00.000Z",
+    history: [
+      { at: "2026-01-02T06:00:00.000Z", by: "HR-EMP-00001", action: "created", summary: "HR created IT fix task." },
+      { at: "2026-01-04T08:20:00.000Z", by: "HR-EMP-00003", action: "progress_updated", summary: "Identified root cause. Progress 40%.", changes: { progress: { from: 0, to: 40 } } },
+      { at: "2026-01-06T05:55:00.000Z", by: "HR-EMP-00003", action: "progress_updated", summary: "Implemented patch and testing. Progress 65%.", changes: { progress: { from: 40, to: 65 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000012",
+    assignedEmployees: ["HR-EMP-00004"],
+    status: "pending",
+    priority: "Medium",
+    subject: "Update attendance radius rules",
+    detail: "Confirm radius changes for the site and update attendance-areas defaults.",
+    projectId: "PROJ-2026-0002",
+    progress: 5,
+    completedAt: null,
+    createdAt: "2025-12-29T06:00:00.000Z",
+    expectedStartAt: "2025-12-30T08:00:00.000Z",
+    expectedEndAt: "2026-01-08T09:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-02T10:00:00.000Z",
+    history: [
+      { at: "2025-12-29T06:00:00.000Z", by: "HR-EMP-00001", action: "created", summary: "HR created attendance rules task." },
+      { at: "2026-01-02T10:00:00.000Z", by: "HR-EMP-00004", action: "progress_updated", summary: "Collected site coordinates. Progress 5%.", changes: { progress: { from: 0, to: 5 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000013",
+    assignedEmployees: ["HR-EMP-00005"],
+    status: "review",
+    priority: "High",
+    subject: "Validate December payroll adjustments",
+    detail: "Review December payroll adjustments and confirm net pay figures before finalizing.",
+    projectId: "PROJ-2026-0003",
+    progress: 92,
+    completedAt: null,
+    createdAt: "2025-12-31T05:00:00.000Z",
+    expectedStartAt: "2025-12-31T06:00:00.000Z",
+    expectedEndAt: "2026-01-07T12:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-06T08:10:00.000Z",
+    history: [
+      { at: "2025-12-31T05:00:00.000Z", by: "HR-EMP-00001", action: "created", summary: "HR created payroll validation task." },
+      { at: "2026-01-03T09:30:00.000Z", by: "HR-EMP-00005", action: "progress_updated", summary: "Verified 70% of employee slips. Progress 70%.", changes: { progress: { from: 0, to: 70 } } },
+      { at: "2026-01-06T08:10:00.000Z", by: "HR-EMP-00005", action: "status_changed", summary: "Sent for HR review.", changes: { status: { from: "working", to: "review" }, progress: { from: 70, to: 92 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000014",
+    assignedEmployees: ["HR-EMP-00006"],
+    status: "working",
+    priority: "Medium",
+    subject: "Clear pending todos due today",
+    detail: "Complete the 3 pending todos and update todo module statuses.",
+    projectId: "PROJ-2026-0001",
+    progress: 35,
+    completedAt: null,
+    createdAt: "2026-01-06T06:10:00.000Z",
+    expectedStartAt: "2026-01-06T07:00:00.000Z",
+    expectedEndAt: "2026-01-07T12:00:00.000Z",
+    createdBy: "HR-EMP-00006",
+    updatedAt: "2026-01-06T10:20:00.000Z",
+    history: [
+      { at: "2026-01-06T06:10:00.000Z", by: "HR-EMP-00006", action: "created", summary: "Self-created todos task." },
+      { at: "2026-01-06T10:20:00.000Z", by: "HR-EMP-00006", action: "progress_updated", summary: "Completed 1 of 3 todos. Progress 35%.", changes: { progress: { from: 0, to: 35 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000015",
+    assignedEmployees: ["HR-EMP-00007"],
+    status: "completed",
+    priority: "Low",
+    subject: "Send meeting reminder to all staff",
+    detail: "Send reminder about Friday meeting and attach agenda link.",
+    projectId: "PROJ-2026-0004",
+    progress: 100,
+    completedAt: "2026-01-04T09:15:00.000Z",
+    createdAt: "2026-01-03T09:00:00.000Z",
+    expectedStartAt: "2026-01-03T10:00:00.000Z",
+    expectedEndAt: "2026-01-04T10:00:00.000Z",
+    createdBy: "HR-EMP-00007",
+    updatedAt: "2026-01-04T09:15:00.000Z",
+    history: [
+      { at: "2026-01-03T09:00:00.000Z", by: "HR-EMP-00007", action: "created", summary: "Self-created reminder task." },
+      { at: "2026-01-04T09:15:00.000Z", by: "HR-EMP-00007", action: "completed", summary: "Reminder sent to all staff.", changes: { status: { from: "working", to: "completed" }, progress: { from: 0, to: 100 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000016",
+    assignedEmployees: ["HR-EMP-00008", "HR-EMP-00010"],
+    status: "working",
+    priority: "High",
+    subject: "Safety checklist update rollout",
+    detail: "Implement updated safety checklist and confirm team training completion.",
+    projectId: "PROJ-2026-0005",
+    progress: 50,
+    completedAt: null,
+    createdAt: "2026-01-02T08:45:00.000Z",
+    expectedStartAt: "2026-01-03T06:00:00.000Z",
+    expectedEndAt: "2026-01-10T09:00:00.000Z",
+    createdBy: "HR-EMP-00008",
+    updatedAt: "2026-01-06T07:25:00.000Z",
+    history: [
+      { at: "2026-01-02T08:45:00.000Z", by: "HR-EMP-00008", action: "created", summary: "Production lead created checklist rollout task." },
+      { at: "2026-01-05T06:10:00.000Z", by: "HR-EMP-00010", action: "edited", summary: "Added QA checkpoint list and training notes." },
+      { at: "2026-01-06T07:25:00.000Z", by: "HR-EMP-00008", action: "progress_updated", summary: "Half of teams trained. Progress 50%.", changes: { progress: { from: 0, to: 50 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000017",
+    assignedEmployees: ["HR-EMP-00009"],
+    status: "overdue",
+    priority: "High",
+    subject: "Design banner set revisions",
+    detail: "Revise banner set based on feedback and re-export all sizes.",
+    projectId: "PROJ-2026-0004",
+    progress: 80,
+    completedAt: null,
+    createdAt: "2025-12-28T07:40:00.000Z",
+    expectedStartAt: "2025-12-29T08:00:00.000Z",
+    expectedEndAt: "2026-01-02T12:00:00.000Z",
+    createdBy: "HR-EMP-00009",
+    updatedAt: "2026-01-06T08:05:00.000Z",
+    history: [
+      { at: "2025-12-28T07:40:00.000Z", by: "HR-EMP-00009", action: "created", summary: "Self-created revision task." },
+      { at: "2026-01-02T13:00:00.000Z", by: "HR-EMP-00009", action: "status_changed", summary: "Deadline missed; flagged overdue.", changes: { status: { from: "working", to: "overdue" } } },
+      { at: "2026-01-06T08:05:00.000Z", by: "HR-EMP-00009", action: "progress_updated", summary: "Re-exported most sizes. Progress 80%.", changes: { progress: { from: 60, to: 80 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000018",
+    assignedEmployees: ["HR-EMP-00001", "HR-EMP-00003"],
+    status: "pending",
+    priority: "Medium",
+    subject: "Review employee password policy (dummy)",
+    detail: "Review password policy for demo data and ensure no real credentials are used.",
+    projectId: "PROJ-2026-0001",
+    progress: 0,
+    completedAt: null,
+    createdAt: "2026-01-06T03:30:00.000Z",
+    expectedStartAt: "2026-01-07T06:00:00.000Z",
+    expectedEndAt: "2026-01-11T06:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-06T03:30:00.000Z",
+    history: [
+      { at: "2026-01-06T03:30:00.000Z", by: "HR-EMP-00001", action: "created", summary: "HR created policy review task." },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000019",
+    assignedEmployees: ["HR-EMP-00004", "HR-EMP-00006"],
+    status: "working",
+    priority: "Medium",
+    subject: "Prepare shift assignment export",
+    detail: "Generate shift assignment export and verify formatting for January.",
+    projectId: "PROJ-2026-0002",
+    progress: 30,
+    completedAt: null,
+    createdAt: "2026-01-04T06:55:00.000Z",
+    expectedStartAt: "2026-01-04T08:00:00.000Z",
+    expectedEndAt: "2026-01-09T12:00:00.000Z",
+    createdBy: "HR-EMP-00001",
+    updatedAt: "2026-01-05T06:10:00.000Z",
+    history: [
+      { at: "2026-01-04T06:55:00.000Z", by: "HR-EMP-00001", action: "created", summary: "HR created export task for IT support." },
+      { at: "2026-01-05T06:10:00.000Z", by: "HR-EMP-00006", action: "progress_updated", summary: "Created export template. Progress 30%.", changes: { progress: { from: 0, to: 30 } } },
+    ],
+  },
+
+  {
+    id: "TASK-2026-0000020",
+    assignedEmployees: ["HR-EMP-00010"],
+    status: "completed",
+    priority: "Low",
+    subject: "Verify QA checklist for packing area",
+    detail: "Verify QA checklist compliance and confirm packing logs are updated.",
+    projectId: "PROJ-2026-0005",
+    progress: 100,
+    completedAt: "2026-01-05T05:45:00.000Z",
+    createdAt: "2026-01-04T05:30:00.000Z",
+    expectedStartAt: "2026-01-04T06:00:00.000Z",
+    expectedEndAt: "2026-01-05T06:00:00.000Z",
+    createdBy: "HR-EMP-00010",
+    updatedAt: "2026-01-05T05:45:00.000Z",
+    history: [
+      { at: "2026-01-04T05:30:00.000Z", by: "HR-EMP-00010", action: "created", summary: "Self-created QA verification task." },
+      { at: "2026-01-05T05:45:00.000Z", by: "HR-EMP-00010", action: "completed", summary: "Checklist verified and logs updated.", changes: { status: { from: "working", to: "completed" }, progress: { from: 0, to: 100 } } },
+    ],
+  },
+];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==================== NOTIFICATIONS ====================
+// “database-style”: each row belongs to ONE user (userId)
+
+export const notifications = [
+  {
+    id: "NOTI-0001",
+    userId: "HR-EMP-00002",
+    title: "New task assigned",
+    message: "Test Account assigned you a new task: Task 20.",
+    senderName: "Test Account",
+    opened: false,
+    type: "task",
+    redirectPath: "/tasks",
+    createdAt: "2026-01-05T09:10:00.000Z",
+  },
+  {
+    id: "NOTI-0002",
+    userId: "HR-EMP-00002",
+    title: "Task removed",
+    message: "Your assignment on 'Assign to users' has been removed.",
+    senderName: "Test Account",
+    opened: true,
+    type: "task",
+    redirectPath: "/tasks",
+    createdAt: "2025-12-18T14:05:00.000Z",
+  },
+  {
+    id: "NOTI-0003",
+    userId: "HR-EMP-00002",
+    title: "Leave approved",
+    message: "Your leave request (2 days) has been approved.",
+    senderName: "Nimal Perera",
+    opened: false,
+    type: "leave",
+    redirectPath: "/leave",
+    createdAt: "2025-12-22T10:30:00.000Z",
+  },
+
+  // HR-EMP-00001 (Nimal)
+  {
+    id: "NOTI-0004",
+    userId: "HR-EMP-00001",
+    title: "Attendance issue detected",
+    message: "3 employees have missing check-ins today.",
+    senderName: "System",
+    opened: false,
+    type: "attendance",
+    redirectPath: "/attendance",
+    createdAt: "2026-01-06T03:45:00.000Z",
+  },
+  {
+    id: "NOTI-0005",
+    userId: "HR-EMP-00001",
+    title: "New employee added",
+    message: "Employee profile created for Dilshan Wijesinghe.",
+    senderName: "System",
+    opened: true,
+    type: "employee",
+    redirectPath: "/profile",
+    createdAt: "2025-12-22T17:12:00.000Z",
+  },
+
+  // HR-EMP-00003 (Kasun)
+  {
+    id: "NOTI-0006",
+    userId: "HR-EMP-00003",
+    title: "Shift updated",
+    message: "Your shift has been changed to 9:00 AM - 6:00 PM.",
+    senderName: "HR Office",
+    opened: false,
+    type: "shift",
+    redirectPath: "/shift-assignment",
+    createdAt: "2026-01-04T08:00:00.000Z",
+  },
+  {
+    id: "NOTI-0007",
+    userId: "HR-EMP-00003",
+    title: "Payroll generated",
+    message: "Your payroll slip is ready for December.",
+    senderName: "Accounts",
+    opened: true,
+    type: "payroll",
+    redirectPath: "/payroll",
+    createdAt: "2025-12-31T06:15:00.000Z",
+  },
+
+  // HR-EMP-00004 (Tharindu)
+  {
+    id: "NOTI-0008",
+    userId: "HR-EMP-00004",
+    title: "Attendance area updated",
+    message: "Attendance location radius has been updated for your site.",
+    senderName: "Admin",
+    opened: false,
+    type: "attendance",
+    redirectPath: "/attendance-areas",
+    createdAt: "2025-12-29T12:30:00.000Z",
+  },
+  {
+    id: "NOTI-0009",
+    userId: "HR-EMP-00004",
+    title: "New policy added",
+    message: "Holiday policy has been updated. Please review.",
+    senderName: "HR Office",
+    opened: true,
+    type: "holiday",
+    redirectPath: "/holiday",
+    createdAt: "2025-12-20T09:00:00.000Z",
+  },
+
+  // HR-EMP-00005 (Ayesha)
+  {
+    id: "NOTI-0010",
+    userId: "HR-EMP-00005",
+    title: "Payroll adjustment",
+    message: "Your payroll has been adjusted due to overtime update.",
+    senderName: "Accounts",
+    opened: false,
+    type: "payroll",
+    redirectPath: "/payroll",
+    createdAt: "2026-01-02T11:20:00.000Z",
+  },
+  {
+    id: "NOTI-0011",
+    userId: "HR-EMP-00005",
+    title: "New task comment",
+    message: "Kasun commented on your task: “Please confirm the totals.”",
+    senderName: "Kasun Jayasinghe",
+    opened: true,
+    type: "task",
+    redirectPath: "/tasks",
+    createdAt: "2025-12-27T15:40:00.000Z",
+  },
+
+  // HR-EMP-00006 (Dilshan)
+  {
+    id: "NOTI-0012",
+    userId: "HR-EMP-00006",
+    title: "Todo reminder",
+    message: "You have 3 pending todos due today.",
+    senderName: "System",
+    opened: false,
+    type: "todo",
+    redirectPath: "/todo",
+    createdAt: "2026-01-06T06:00:00.000Z",
+  },
+  {
+    id: "NOTI-0013",
+    userId: "HR-EMP-00006",
+    title: "Leave request submitted",
+    message: "Your leave request has been submitted for approval.",
+    senderName: "System",
+    opened: true,
+    type: "leave",
+    redirectPath: "/leave",
+    createdAt: "2025-12-24T07:25:00.000Z",
+  },
+
+  // HR-EMP-00007 (Ruwani)
+  {
+    id: "NOTI-0014",
+    userId: "HR-EMP-00007",
+    title: "New announcement",
+    message: "Company meeting scheduled for Friday at 3:00 PM.",
+    senderName: "Management",
+    opened: false,
+    type: "general",
+    redirectPath: "/feeds",
+    createdAt: "2026-01-03T10:05:00.000Z",
+  },
+  {
+    id: "NOTI-0015",
+    userId: "HR-EMP-00007",
+    title: "Attendance marked",
+    message: "Your attendance has been marked successfully.",
+    senderName: "System",
+    opened: true,
+    type: "attendance",
+    redirectPath: "/attendance",
+    createdAt: "2026-01-05T04:50:00.000Z",
+  },
+
+  // HR-EMP-00008 (Isuru)
+  {
+    id: "NOTI-0016",
+    userId: "HR-EMP-00008",
+    title: "Shift assignment added",
+    message: "You have been assigned to Shift B starting tomorrow.",
+    senderName: "HR Office",
+    opened: false,
+    type: "shift",
+    redirectPath: "/shift-assignment",
+    createdAt: "2026-01-05T13:15:00.000Z",
+  },
+  {
+    id: "NOTI-0017",
+    userId: "HR-EMP-00008",
+    title: "Holiday reminder",
+    message: "Upcoming holiday: Duruthu Full Moon Poya (in 2 days).",
+    senderName: "System",
+    opened: true,
+    type: "holiday",
+    redirectPath: "/holiday",
+    createdAt: "2026-01-04T07:00:00.000Z",
+  },
+
+  // HR-EMP-00009 (Mihiri)
+  {
+    id: "NOTI-0018",
+    userId: "HR-EMP-00009",
+    title: "Task due soon",
+    message: "Your task “Design banner set” is due in 24 hours.",
+    senderName: "Task Bot",
+    opened: false,
+    type: "task",
+    redirectPath: "/tasks",
+    createdAt: "2026-01-06T08:10:00.000Z",
+  },
+
+  // HR-EMP-00010 (Shehan)
+  {
+    id: "NOTI-0019",
+    userId: "HR-EMP-00010",
+    title: "Attendance warning",
+    message: "Late check-in detected twice this week.",
+    senderName: "System",
+    opened: true,
+    type: "attendance",
+    redirectPath: "/attendance",
+    createdAt: "2025-12-28T05:20:00.000Z",
+  },
+  {
+    id: "NOTI-0020",
+    userId: "HR-EMP-00010",
+    title: "New feed post",
+    message: "A new post was added: “Safety checklist update”.",
+    senderName: "Admin",
+    opened: false,
+    type: "general",
+    redirectPath: "/feeds",
+    createdAt: "2026-01-02T09:35:00.000Z",
+  },
+];
 
 
 
