@@ -8,6 +8,10 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
+  LogIn,
+  LogOut,
+  StickyNote,
 } from "lucide-react";
 import EventFormModal from "../components/EventFormModal";
 
@@ -56,10 +60,10 @@ const startOfMonthGrid = (y, m) => {
   return { first, last, days };
 };
 
-const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const monthTitle = (y, m) => {
+  const d = new Date(y, m, 1);
+  return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+};
 
 const Feeds = () => {
   const { navigate, userData, sortedFeeds, userEvents, addEvent } = useAppContext();
@@ -68,27 +72,44 @@ const Feeds = () => {
   const [tab, setTab] = useState("feeds"); // feeds | events
   const [loading, setLoading] = useState(true);
 
-  // Events UI
+  // Events
   const minDate = useMemo(() => todayKey(), []);
   const [selectedDate, setSelectedDate] = useState(() => minDate);
 
-  // Month/Year controls
-  const now = useMemo(() => new Date(), []);
-  const [viewMode, setViewMode] = useState("month"); // day | week | month (UI only)
-  const [month, setMonth] = useState(() => new Date().getMonth());
-  const [year, setYear] = useState(() => new Date().getFullYear());
+  // Month anchor (controls what calendar is showing)
+  const [anchorDate, setAnchorDate] = useState(() => new Date());
 
   // Modal
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [eventDraft, setEventDraft] = useState(null); // { date }
 
-  // Filters (like your screenshot)
+  // Filters with icons
   const filterDefs = useMemo(
     () => [
-      { key: "Work Orders", pill: "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-200" },
-      { key: "Move-Ins", pill: "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-200" },
-      { key: "Move-Outs", pill: "bg-indigo-50 border-indigo-200 text-indigo-800 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-200" },
-      { key: "Notes", pill: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-200" },
+      {
+        key: "Work Orders",
+        icon: ClipboardList,
+        pill:
+          "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-200",
+      },
+      {
+        key: "Move-Ins",
+        icon: LogIn,
+        pill:
+          "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-200",
+      },
+      {
+        key: "Move-Outs",
+        icon: LogOut,
+        pill:
+          "bg-indigo-50 border-indigo-200 text-indigo-800 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-200",
+      },
+      {
+        key: "Notes",
+        icon: StickyNote,
+        pill:
+          "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-200",
+      },
     ],
     []
   );
@@ -97,20 +118,22 @@ const Feeds = () => {
     "Work Orders": true,
     "Move-Ins": true,
     "Move-Outs": true,
-    "Notes": true,
+    Notes: true,
   }));
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 280);
+    const t = setTimeout(() => setLoading(false), 250);
     return () => clearTimeout(t);
   }, []);
 
+  // Feeds list
   const feedList = useMemo(() => (sortedFeeds || []).slice(), [sortedFeeds]);
 
+  // Events map
   const eventsByDate = useMemo(() => {
     const map = new Map();
     (userEvents || []).forEach((ev) => {
-      const k = ev.date;
+      const k = ev?.date;
       if (!k) return;
       if (!map.has(k)) map.set(k, []);
       map.get(k).push(ev);
@@ -148,7 +171,7 @@ const Feeds = () => {
 
     addEvent({
       id,
-      employeeId: currentEmployeeId, // ✅ self only (from context)
+      employeeId: currentEmployeeId, // ✅ self only
       title: payload.title,
       date: payload.date,
       time: payload.time || "",
@@ -157,29 +180,8 @@ const Feeds = () => {
     });
 
     setSelectedDate(payload.date);
+    setAnchorDate(new Date(payload.date));
     setEventModalOpen(false);
-  };
-
-  // Build big month grid
-  const monthGrid = useMemo(() => {
-    const { days } = startOfMonthGrid(year, month);
-    const title = `${monthNames[month]} ${year}`;
-    return { days, title };
-  }, [month, year]);
-
-  // Mini calendar (same month/year, smaller)
-  const mini = useMemo(() => {
-    const { days } = startOfMonthGrid(year, month);
-    return { days };
-  }, [month, year]);
-
-  const monthHasEvents = (dateKey) => {
-    const arr = eventsByDate.get(dateKey) || [];
-    const visible = arr.filter((e) => {
-      const cat = e.category || "Notes";
-      return !!filters[cat];
-    });
-    return visible.length > 0;
   };
 
   const visibleEventsForDate = (dateKey) => {
@@ -190,35 +192,58 @@ const Feeds = () => {
     });
   };
 
+  const monthHasEvents = (dateKey) => visibleEventsForDate(dateKey).length > 0;
+
   const pillClassForCategory = (cat) => {
     const hit = filterDefs.find((x) => x.key === cat);
-    return hit?.pill || filterDefs[3].pill; // fallback Notes
+    return hit?.pill || filterDefs[3].pill;
   };
 
-  const clampToNowMonth = () => {
-    const d = new Date();
-    setYear(d.getFullYear());
-    setMonth(d.getMonth());
-    setSelectedDate(minDate);
+  const gotoPrevMonth = () => {
+    const d = new Date(anchorDate.getFullYear(), anchorDate.getMonth() - 1, 1);
+    setAnchorDate(d);
   };
 
-  const goPrevMonth = () => {
-    const next = new Date(year, month - 1, 1);
-    setYear(next.getFullYear());
-    setMonth(next.getMonth());
+  const gotoNextMonth = () => {
+    const d = new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 1);
+    setAnchorDate(d);
   };
 
-  const goNextMonth = () => {
-    const next = new Date(year, month + 1, 1);
-    setYear(next.getFullYear());
-    setMonth(next.getMonth());
-  };
+  const bigMonth = useMemo(() => {
+    const y = anchorDate.getFullYear();
+    const m = anchorDate.getMonth();
+    const { days } = startOfMonthGrid(y, m);
+    return { y, m, days, title: monthTitle(y, m) };
+  }, [anchorDate]);
 
-  const yearOptions = useMemo(() => {
-    const base = new Date().getFullYear();
-    // show a clean range like UI designs
-    return Array.from({ length: 8 }, (_, i) => base - 1 + i); // (base-1) .. (base+6)
-  }, []);
+  const miniMonth = useMemo(() => {
+    const y = anchorDate.getFullYear();
+    const m = anchorDate.getMonth();
+    const { days } = startOfMonthGrid(y, m);
+    return { y, m, days, title: monthTitle(y, m) };
+  }, [anchorDate]);
+
+  const monthFlatEvents = useMemo(() => {
+    const y = anchorDate.getFullYear();
+    const m = anchorDate.getMonth();
+    const { days } = startOfMonthGrid(y, m);
+
+    const monthKeys = days
+      .filter(Boolean)
+      .map((d) => toDateKey(d))
+      .filter((k) => visibleEventsForDate(k).length > 0);
+
+    const flat = monthKeys.flatMap((k) =>
+      visibleEventsForDate(k).map((ev) => ({ ...ev, __k: k }))
+    );
+
+    flat.sort((a, b) => {
+      if (a.__k !== b.__k) return a.__k.localeCompare(b.__k);
+      return (a.time || "").localeCompare(b.time || "");
+    });
+
+    return flat;
+  }, [anchorDate, filters, eventsByDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-4">
@@ -227,18 +252,19 @@ const Feeds = () => {
         <span className="cursor-pointer hover:text-primary" onClick={() => navigate("/")}>
           Dashboard
         </span>{" "}
-        /{" "}
-        <span className="font-medium text-gray-900 dark:text-white">Feeds</span>
+        / <span className="font-medium text-gray-900 dark:text-white">Feeds</span>
       </div>
 
-      {/* Header + Tabs (keep your style) */}
+      {/* Header + Tabs */}
       <div className="rounded-2xl border border-gray-100 dark:border-white/10 bg-white dark:bg-[#0b1016] p-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="text-xl font-bold">Community</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              {tab === "feeds" ? `${(feedList || []).length} posts` : `${(userEvents || []).length} events`} • Logged in as{" "}
-              {userData?.firstName || "User"}
+              {tab === "feeds"
+                ? `${(feedList || []).length} posts`
+                : `${(userEvents || []).length} events`}{" "}
+              • Logged in as {userData?.firstName || "User"}
             </div>
           </div>
 
@@ -339,81 +365,78 @@ const Feeds = () => {
       {/* ---------------- EVENTS TAB ---------------- */}
       {tab === "events" ? (
         <div className="space-y-4">
-          {/* Calendar header like screenshot */}
           <div className="border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] rounded-md">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">Calendar</div>
+            {/* Top header: ONLY title + Add Event */}
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <CalendarDays className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+                <div className="text-2xl font-bold text-gray-900 dark:text-white truncate">Calendar</div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 justify-between lg:justify-end">
-                {/* View mode (UI like screenshot) */}
-                <div className="inline-flex border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 rounded-md overflow-hidden">
-                  {["Day", "Week", "Month"].map((v) => {
-                    const key = v.toLowerCase();
-                    const active = viewMode === key;
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => setViewMode(key)}
-                        className={`h-9 px-4 text-sm font-semibold border-r last:border-r-0 border-gray-200 dark:border-white/10 ${
-                          active
-                            ? "bg-black text-white dark:bg-white dark:text-black"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-white/10"
-                        }`}
-                        title="UI toggle"
-                      >
-                        {v}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Add Event */}
-                <button
-                  onClick={() => openCreateForDate(selectedDate)}
-                  disabled={isPastKey(selectedDate)}
-                  className={`h-9 px-4 rounded-md text-sm font-semibold inline-flex items-center gap-2 transition ${
-                    isPastKey(selectedDate)
-                      ? "bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed"
-                      : "bg-primary text-white hover:bg-primary/90"
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Event
-                </button>
-              </div>
+              {/* ✅ ONLY ADD BUTTON (keep only this) */}
+              <button
+                onClick={() => openCreateForDate(selectedDate)}
+                disabled={isPastKey(selectedDate)}
+                className={`h-9 px-4 rounded-md text-sm font-semibold inline-flex items-center gap-2 transition ${
+                  isPastKey(selectedDate)
+                    ? "bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed"
+                    : "bg-primary text-white hover:bg-primary/90"
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+                Add Event
+              </button>
             </div>
 
-            {/* Main body */}
-            <div className="grid grid-cols-1 xl:grid-cols-[260px_minmax(0,1fr)_360px]">
-              {/* LEFT SIDEBAR: Filters + mini calendar */}
+            <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_380px]">
+              {/* LEFT: Filters + (Mobile mini calendar) */}
               <div className="border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-white/10 p-4">
                 <div className="text-sm font-bold text-gray-900 dark:text-white">Filters</div>
 
                 <div className="mt-3 space-y-2">
-                  {filterDefs.map((f) => (
-                    <label key={f.key} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
-                      <input
-                        type="checkbox"
-                        checked={!!filters[f.key]}
-                        onChange={(e) => setFilters((p) => ({ ...p, [f.key]: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      <span className="inline-flex items-center gap-2">
-                        <span className={`h-4 w-4 border ${f.pill} inline-block`} />
-                        {f.key}
-                      </span>
-                    </label>
-                  ))}
+                  {filterDefs.map((f) => {
+                    const Icon = f.icon;
+                    return (
+                      <label key={f.key} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          checked={!!filters[f.key]}
+                          onChange={(e) => setFilters((p) => ({ ...p, [f.key]: e.target.checked }))}
+                          className="h-4 w-4"
+                        />
+                        <span className="inline-flex items-center gap-2">
+                          <span className={`h-8 w-8 border ${f.pill} grid place-items-center`}>
+                            <Icon className="w-4 h-4" />
+                          </span>
+                          <span className="font-semibold">{f.key}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
 
-                {/* Mini calendar */}
-                <div className="mt-6">
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">
-                    {monthNames[month]} {year}
+                {/* ✅ MOBILE ONLY mini calendar */}
+                <div className="mt-6 xl:hidden">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-sm font-bold text-gray-900 dark:text-white">{miniMonth.title}</div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={gotoPrevMonth}
+                        className="h-9 w-9 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 rounded-md grid place-items-center"
+                        aria-label="Prev month"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={gotoNextMonth}
+                        className="h-9 w-9 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 rounded-md grid place-items-center"
+                        aria-label="Next month"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
+
                   <div className="mt-2 grid grid-cols-7 gap-1 text-[11px] text-gray-500 dark:text-gray-400">
                     {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                       <div key={d} className="text-center py-1">
@@ -423,8 +446,9 @@ const Feeds = () => {
                   </div>
 
                   <div className="grid grid-cols-7 gap-1">
-                    {mini.days.map((d, idx) => {
+                    {miniMonth.days.map((d, idx) => {
                       if (!d) return <div key={`mini-b-${idx}`} className="h-7" />;
+
                       const k = toDateKey(d);
                       const selected = k === selectedDate;
                       const past = isPastKey(k);
@@ -434,12 +458,15 @@ const Feeds = () => {
                         <button
                           key={`mini-${k}`}
                           disabled={past}
-                          onClick={() => setSelectedDate(k)}
+                          onClick={() => {
+                            if (past) return;
+                            setSelectedDate(k);
+                          }}
                           className={`h-7 border text-[11px] font-semibold relative ${
                             past
                               ? "opacity-40 cursor-not-allowed bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10"
                               : selected
-                              ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                              ? "bg-primary text-white border-primary"
                               : "bg-white dark:bg-[#0b1016] border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
                           }`}
                         >
@@ -447,7 +474,7 @@ const Feeds = () => {
                           {dot ? (
                             <span
                               className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 ${
-                                selected ? "bg-white dark:bg-black" : "bg-primary"
+                                selected ? "bg-white" : "bg-primary"
                               }`}
                             />
                           ) : null}
@@ -456,60 +483,23 @@ const Feeds = () => {
                     })}
                   </div>
                 </div>
-
-                <button
-                  onClick={clampToNowMonth}
-                  className="mt-5 h-9 px-3 w-full border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-semibold rounded-md"
-                >
-                  Jump to Today
-                </button>
               </div>
 
-              {/* CENTER: Big Month Calendar */}
-              <div className="min-w-0 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-white/10">
-                {/* Month controls like screenshot */}
-                <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 dark:border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
-                      {monthGrid.title}
-                    </div>
-                  </div>
+              {/* ✅ DESKTOP ONLY big calendar */}
+              <div className="min-w-0 xl:block hidden border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-white/10">
+                <div className="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{bigMonth.title}</div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* month/year quick change */}
-                    <select
-                      value={month}
-                      onChange={(e) => setMonth(Number(e.target.value))}
-                      className="h-9 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] text-sm rounded-md outline-none"
-                    >
-                      {monthNames.map((name, idx) => (
-                        <option key={name} value={idx}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={year}
-                      onChange={(e) => setYear(Number(e.target.value))}
-                      className="h-9 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] text-sm rounded-md outline-none"
-                    >
-                      {yearOptions.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={goPrevMonth}
+                      onClick={gotoPrevMonth}
                       className="h-9 w-9 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 rounded-md grid place-items-center"
                       aria-label="Prev month"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={goNextMonth}
+                      onClick={gotoNextMonth}
                       className="h-9 w-9 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 rounded-md grid place-items-center"
                       aria-label="Next month"
                     >
@@ -518,7 +508,6 @@ const Feeds = () => {
                   </div>
                 </div>
 
-                {/* Weekday header */}
                 <div className="grid grid-cols-7 border-b border-gray-200 dark:border-white/10">
                   {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
                     <div
@@ -530,16 +519,16 @@ const Feeds = () => {
                   ))}
                 </div>
 
-                {/* Month grid (boxy cells) */}
                 <div className="grid grid-cols-7">
-                  {monthGrid.days.map((d, idx) => {
+                  {bigMonth.days.map((d, idx) => {
                     const isBlank = !d;
                     const k = isBlank ? `blank-${idx}` : toDateKey(d);
                     const selected = !isBlank && k === selectedDate;
                     const past = !isBlank && isPastKey(k);
-                    const visibleEvents = !isBlank ? visibleEventsForDate(k) : [];
-                    const showEvents = visibleEvents.slice(0, 3);
-                    const more = Math.max(0, visibleEvents.length - showEvents.length);
+
+                    const visible = !isBlank ? visibleEventsForDate(k) : [];
+                    const showEvents = visible.slice(0, 4);
+                    const more = Math.max(0, visible.length - showEvents.length);
 
                     return (
                       <button
@@ -549,7 +538,7 @@ const Feeds = () => {
                           if (isBlank || past) return;
                           setSelectedDate(k);
                         }}
-                        className={`min-h-[110px] md:min-h-[130px] border-r border-b border-gray-200 dark:border-white/10 p-2 text-left relative ${
+                        className={`min-h-[130px] border-r border-b border-gray-200 dark:border-white/10 p-2 text-left ${
                           isBlank
                             ? "bg-white dark:bg-[#0b1016]"
                             : past
@@ -563,20 +552,10 @@ const Feeds = () => {
                         {isBlank ? null : (
                           <>
                             <div className="flex items-center justify-between">
-                              <div
-                                className={`text-sm font-bold ${
-                                  selected ? "text-primary dark:text-white" : "text-gray-900 dark:text-white"
-                                }`}
-                              >
-                                {d.getDate()}
-                              </div>
-
-                              {monthHasEvents(k) ? (
-                                <span className="h-2 w-2 bg-primary inline-block" />
-                              ) : null}
+                              <div className="text-sm font-bold text-gray-900 dark:text-white">{d.getDate()}</div>
+                              {visible.length > 0 ? <span className="h-2 w-2 bg-primary inline-block" /> : null}
                             </div>
 
-                            {/* events inside cell (overall view) */}
                             <div className="mt-2 space-y-1">
                               {showEvents.map((ev) => {
                                 const cat = ev.category || "Notes";
@@ -608,113 +587,85 @@ const Feeds = () => {
                 </div>
               </div>
 
-              {/* RIGHT: Selected Day panel (desktop), Mobile will show below */}
-              <div className="p-4 hidden xl:block">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="text-sm font-bold text-gray-900 dark:text-white">Selected</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{selectedDate}</div>
-                  </div>
-                  <button
-                    onClick={() => openCreateForDate(selectedDate)}
-                    disabled={isPastKey(selectedDate)}
-                    className={`h-9 px-3 rounded-md text-sm font-semibold inline-flex items-center gap-2 transition ${
-                      isPastKey(selectedDate)
-                        ? "bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-primary/90"
-                    }`}
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add
-                  </button>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  {visibleEventsForDate(selectedDate).map((ev) => (
-                    <div
-                      key={ev.id}
-                      className="border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3"
-                    >
-                      <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{ev.title}</div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5" />
-                        {ev.time ? ev.time : "No time"}
-                      </div>
-                      <div className="mt-2">
-                        <span className={`inline-flex px-2 py-1 border text-[11px] font-semibold ${pillClassForCategory(ev.category || "Notes")}`}>
-                          {ev.category || "Notes"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {visibleEventsForDate(selectedDate).length === 0 ? (
-                    <div className="border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 text-center">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">No events</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Create an event for this day.
-                      </div>
-                      <button
-                        onClick={() => openCreateForDate(selectedDate)}
-                        disabled={isPastKey(selectedDate)}
-                        className={`mt-4 h-9 px-3 rounded-md text-sm font-semibold inline-flex items-center gap-2 transition ${
-                          isPastKey(selectedDate)
-                            ? "bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed"
-                            : "bg-primary text-white hover:bg-primary/90"
-                        }`}
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add Event
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            {/* MOBILE selected panel (shows under calendar) */}
-            <div className="xl:hidden border-t border-gray-200 dark:border-white/10 p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">Selected</div>
+              {/* RIGHT: Selected + All events (THIS MONTH) — now on desktop also */}
+              <div className="p-4 space-y-4">
+                <div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">Selected Day Events</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">{selectedDate}</div>
-                </div>
-                <button
-                  onClick={() => openCreateForDate(selectedDate)}
-                  disabled={isPastKey(selectedDate)}
-                  className={`h-9 px-3 rounded-md text-sm font-semibold inline-flex items-center gap-2 transition ${
-                    isPastKey(selectedDate)
-                      ? "bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed"
-                      : "bg-primary text-white hover:bg-primary/90"
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add
-                </button>
-              </div>
 
-              <div className="mt-3 space-y-2">
-                {visibleEventsForDate(selectedDate).slice(0, 6).map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3"
-                  >
-                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{ev.title}</div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5" />
-                      {ev.time ? ev.time : "No time"}
-                    </div>
+                  <div className="mt-3 space-y-2">
+                    {visibleEventsForDate(selectedDate).map((ev) => (
+                      <div
+                        key={ev.id}
+                        className="border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3"
+                      >
+                        <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{ev.title}</div>
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5" />
+                          {ev.time ? ev.time : "No time"}
+                        </div>
+                        <div className="mt-2">
+                          <span
+                            className={`inline-flex px-2 py-1 border text-[11px] font-semibold ${pillClassForCategory(
+                              ev.category || "Notes"
+                            )}`}
+                          >
+                            {ev.category || "Notes"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {visibleEventsForDate(selectedDate).length === 0 ? (
+                      <div className="border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                        <div className="text-sm font-bold text-gray-900 dark:text-white">No events</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          No events for selected date.
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
-                ))}
+                </div>
 
-                {visibleEventsForDate(selectedDate).length === 0 ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">No events for this day.</div>
-                ) : null}
+                {/* ✅ ALL EVENTS THIS MONTH (now desktop also) */}
+                <div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">All Events (This Month)</div>
+
+                  <div className="mt-3 space-y-2">
+                    {monthFlatEvents.length === 0 ? (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">No events in this month.</div>
+                    ) : (
+                      monthFlatEvents.map((ev) => (
+                        <button
+                          key={ev.id}
+                          onClick={() => setSelectedDate(ev.__k)}
+                          className="w-full text-left border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b1016] hover:bg-gray-50 dark:hover:bg-white/5 p-3 rounded-md"
+                        >
+                          <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{ev.title}</div>
+                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <span className="font-semibold">{ev.__k}</span>
+                            <span>•</span>
+                            <Clock className="w-3.5 h-3.5" />
+                            {ev.time ? ev.time : "No time"}
+                          </div>
+                          <div className="mt-2">
+                            <span
+                              className={`inline-flex px-2 py-1 border text-[11px] font-semibold ${pillClassForCategory(
+                                ev.category || "Notes"
+                              )}`}
+                            >
+                              {ev.category || "Notes"}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Modal */}
           <EventFormModal
             open={eventModalOpen}
             onClose={() => setEventModalOpen(false)}
